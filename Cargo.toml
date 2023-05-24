@@ -21,8 +21,8 @@ mipidsi = { version = "0.7", git = "https://github.com/georgik/mipidsi.git", bra
 ui = { path = "./ui"}
 
 esp-mbedtls = { git = "https://github.com/esp-rs/esp-mbedtls.git" }
-heapless = "0.7.16"
-critical-section = "1.0.1"
+minimq = "0.6.2"
+
 
 [features]
 default = [ "esp32s3-hal/eh1" ]
