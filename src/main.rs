@@ -44,6 +44,8 @@ use smoltcp::{
 };
 use esp_mbedtls::{set_debug, Mode, TlsVersion};
 use esp_mbedtls::{Certificates, Session};
+use minimq::{Minimq, QoS, Retain};
+
 
 const SSID: &str = env!("SSID");
 const PASSWORD: &str = env!("PASSWORD");
