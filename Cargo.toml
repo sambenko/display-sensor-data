@@ -23,6 +23,9 @@ ui = { path = "./ui"}
 esp-mbedtls = { git = "https://github.com/esp-rs/esp-mbedtls.git" }
 minimq = "0.6.2"
 
+embedded-nal = "0.6.0"
+no-std-net = "0.6.0"
+
 
 [features]
 default = [ "esp32s3-hal/eh1" ]

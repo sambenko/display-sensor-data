@@ -1,11 +1,14 @@
 #![no_std]
 #![no_main]
 
+mod esp_wifi_nal;
+use embedded_nal::TcpClientStack;
+use embedded_nal::{IpAddr, Ipv4Addr}
+
 use embedded_graphics::{
     pixelcolor::Rgb565, prelude::*,
 };
 
-use embedded_io::blocking::*;
 use embedded_svc::{
     ipv4::Interface,
     wifi::{ClientConfiguration, Configuration, Wifi},
@@ -42,9 +45,11 @@ use smoltcp::{
     iface::SocketStorage, 
     wire::{ IpAddress, Ipv4Address }
 };
-use esp_mbedtls::{set_debug, Mode, TlsVersion};
-use esp_mbedtls::{Certificates, Session};
-use minimq::{Minimq, QoS, Retain};
+use esp_mbedtls::{ Mode, TlsVersion };
+use esp_mbedtls::{ Certificates, Session };
+use minimq::{ Minimq, QoS, Retain };
+
+use crate::esp_wifi_nal::WifiTcpClientStack;
 
 
 const SSID: &str = env!("SSID");
@@ -164,16 +169,21 @@ fn main() -> ! {
 
     println!("We are connected!");
 
-    println!("Making HTTP request");
+    println!("AWS socket open");
     let mut rx_buffer = [0u8; 1536];
     let mut tx_buffer = [0u8; 1536];
-    let mut socket = wifi_stack.get_socket(&mut rx_buffer, &mut tx_buffer);
+    let mut tcp_stack = WifiTcpClientStack {
+        wifi_stack: &mut wifi_stack,
+        rx_buffer: &mut rx_buffer,
+        tx_buffer: &mut tx_buffer,
+    };
+    let mut socket = tcp_stack.socket().unwrap();
 
-    socket.work();
+    socket.expect("REASON").work();
 
-    socket
-        .open(IpAddress::Ipv4(Ipv4Address::new(52, 28, 41, 87)), 8883)
-        .unwrap();
+    let remote_addr = no_std_net::SocketAddr::new(IpAddr::V4(Ipv4Addr::new(52, 28, 41, 87)), 8883);
+
+    tcp_stack.connect(&mut socket, remote_addr).unwrap();
 
     let certificates = Certificates {
         certs: Some(CERT),
@@ -194,8 +204,10 @@ fn main() -> ! {
     println!("Start tls connect");
     tls.connect().unwrap();
 
-    println!("Did we even get here?");
+    println!("Mqtt pain should be implemented here");
 
+
+    tcp_stack.close(socket).unwrap();
     loop {
 
     }
